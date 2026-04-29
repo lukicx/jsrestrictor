@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <body>
+    <h1>Sensor test page</h1>
+    <div id="result">idle</div>
+
+    <script>
+      function runSensorTest() {
+        const resultEl = document.getElementById("result");
+        const params = new URLSearchParams(window.location.search);
+        const sensorType = params.get("sensorType") || "accelerometer";
+
+        function readXYZ(sensor) {
+          return {
+            x: sensor.x,
+            y: sensor.y,
+            z: sensor.z,
+          };
+        }
+        function readQuaternion(sensor) {
+          return {
+            x: sensor.quaternion[0],
+            y: sensor.quaternion[1],
+            z: sensor.quaternion[2],
+            w: sensor.quaternion[3],
+          };
+        }
+
+        const sensorMap = {
+          accelerometer: window.Accelerometer,
+          gyroscope: window.Gyroscope,
+          gravity: window.GravitySensor,
+          linearAcceleration: window.LinearAccelerationSensor,
+          absoluteOrientation: window.AbsoluteOrientationSensor,
+          relativeOrientation: window.RelativeOrientationSensor,
+        };
+
+        const sensorConstructor = sensorMap[sensorType];
+
+        if (!sensorConstructor) {
+          resultEl.textContent = "Unsupported API";
+          return; 
+        }
+
+        let finished = false;
+
+        function setResult(value) {
+          if (!finished) {
+            finished = true;
+            resultEl.textContent = value;
+          }
+        }
+
+        try {
+          const sensor = new sensorConstructor({ frequency: 10 });
+
+          sensor.addEventListener("reading", () => {
+            if (sensorType === "absoluteOrientation" || sensorType === "relativeOrientation") {
+              setResult(JSON.stringify(readQuaternion(sensor)));
+            } else {
+              setResult(JSON.stringify(readXYZ(sensor)));
+            }
+            sensor.stop();
+          });
+
+          sensor.addEventListener("error", (e) => {
+            setResult(`Error: ${e.error.name}`);
+          });
+
+          setTimeout(() => {
+            setResult("Timeout");
+            sensor.stop();
+          }, 3000);
+
+          sensor.start();
+        } catch (err) {
+          setResult(`Error: ${err.name}`);
+        }
+      }
+
+      window.addEventListener("load", runSensorTest);
+    </script>
+  </body>
+</html>

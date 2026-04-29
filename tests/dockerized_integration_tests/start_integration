@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -e
+
+TESTS="${1:-}"
+
+echo "Starting Docker.."
+docker compose up -d --build
+
+case "$TESTS" in
+  chrome-jshelter)
+    echo "Preparing Chrome profile with JShelter.."
+    docker compose exec tests python open_chrome.py jshelter
+    ;;
+
+  firefox-jshelter)
+    echo "Preparing Firefox JShelter FPD profile.."
+    docker compose exec tests python open_firefox.py fpd
+    ;;
+
+  "")
+    echo "Running all tests..."
+    docker compose exec tests pytest -v -s
+    ;;
+
+  lna)
+    echo "Running tests: lna"
+    docker compose exec tests pytest -v -s test_lna.py
+    ;;
+
+  nbs)
+    echo "Running tests: nbs"
+    docker compose exec tests pytest -v -s test_nbs.py
+    ;;
+
+  fpd)
+    echo "Running tests: fpd"
+    docker compose exec tests pytest -v -s test_fpd.py
+    ;;
+
+  geo)
+    echo "Running tests: geo"
+    docker compose exec tests pytest -v -s test_geo.py
+    ;;
+
+  sensor)
+    echo "Running tests: sensor"
+    docker compose exec tests pytest -v -s test_sensor.py
+    ;;
+
+  fingerprinting)
+    echo "Running tests: fingerprinting"
+    docker compose exec tests pytest -v -s test_fingerprinting.py
+    ;;
+
+  *)
+    echo "Unknown command or test alias: $TESTS"
+    echo
+    echo "Available commands:"
+    echo "  ./start_integration"
+    echo "  ./start_integration chrome-jshelter"
+    echo "  ./start_integration firefox-jshelter"
+    echo "  ./start_integration fingerprinting"
+    echo "  ./start_integration fpd"
+    echo "  ./start_integration geo"
+    echo "  ./start_integration lna"
+    echo "  ./start_integration nbs"
+    echo "  ./start_integration sensor"
+    exit 1
+    ;;
+esac

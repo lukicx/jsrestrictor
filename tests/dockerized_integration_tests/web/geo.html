@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <body>
+    <h1>Geolocation test page</h1>
+    <div id="result">idle</div>
+
+    <script>
+        function runGeoTest() {
+        const resultEl = document.getElementById("result");
+
+        if (!navigator.geolocation) {
+            resultEl.textContent = "Unsupported API";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+            resultEl.textContent = JSON.stringify({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                timestamp: position.timestamp,
+            });
+            },
+            (err) => {
+                const errorCodes = {
+                    1: "permission denied",
+                    2: "position unavailable",
+                    3: "timeout",
+                };
+                resultEl.textContent = `Error: ${errorCodes[err.code] || "unknown"}`;
+            },
+            {
+            enableHighAccuracy: true,
+            timeout: 3000,
+            maximumAge: 0,
+            }
+        );
+      }
+        window.addEventListener("load", runGeoTest);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <body>
+    <h1>NBS test page</h1>
+    <div id="result">idle</div>
+
+    <script>
+      const resultEl = document.getElementById("result");
+      let testFinished = false;
+
+      function setResult(value) {
+        if (!testFinished) {
+          testFinished = true;
+          resultEl.textContent = value;
+        }
+      }
+
+      function runNBSorLNATest() {
+        testFinished = false;
+
+        const params = new URLSearchParams(window.location.search);
+        const requestType = params.get("requestType") || "img";
+        const targetNetwork = params.get("targetNetwork") || "local";
+        const targetBase = targetNetwork === "local" ? "http://10.255.0.10:5000" : "http://1.2.3.10:5000";
+        
+        let target;
+
+        switch (requestType) {
+          case "script":
+            target = `${targetBase}/script?ts=` + Date.now();
+            break;
+          case "iframe":
+            target = `${targetBase}/iframe?ts=` + Date.now();
+            break;
+          default:
+            target = `${targetBase}/img?ts=` + Date.now();
+        }
+
+        if (requestType === "iframe") {
+          function handleMessage(e) {
+            if (e.data === "iframe-loaded") {
+              window.removeEventListener("message", handleMessage);
+              setResult("local loaded");
+            }
+          }
+
+          window.addEventListener("message", handleMessage);
+
+          setTimeout(() => {
+            window.removeEventListener("message", handleMessage);
+            setResult("local timeout");
+          }, 3000);
+
+          const iframe = document.createElement("iframe");
+          iframe.src = target;
+          document.body.appendChild(iframe);
+          return;
+        }
+
+        setTimeout(() => setResult("local timeout"), 3000);
+
+        switch (requestType) {
+          case "fetch":
+            fetch(target, {
+            mode: "no-cors",
+            targetAddressSpace: "local"
+            })
+              .then(() => setResult("local loaded"))
+              .catch(() => setResult("local blocked"));
+            return;
+
+          case "img": {
+            const img = new Image();
+            img.onload = () => setResult("local loaded");
+            img.onerror = () => setResult("local blocked");
+            img.src = target;
+            document.body.appendChild(img);
+            return;
+          }
+
+          case "script": {
+            const script = document.createElement("script");
+            script.onload = () => setResult("local loaded");
+            script.onerror = () => setResult("local blocked");
+            script.src = target;
+            document.body.appendChild(script);
+            return;
+          }
+        }
+      }
+      window.addEventListener("load", () => {
+        setTimeout(() => runNBSorLNATest(), 200);
+      });
+    </script>
+  </body>
+</html>

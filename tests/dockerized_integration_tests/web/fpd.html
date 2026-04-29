@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <body>
+    <h1>FPD test page</h1>
+    <div id="result">idle</div>
+
+    <script>
+      const FPD_EVALUATION_DELAY = 500;
+      const UPLOAD_TIMEOUT = 1000;
+
+      function triggerCanvasFingerprinting(canvas) {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        for (let i = 0; i < 20; i++) {
+          ctx.beginPath();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = `rgb(${i}, ${i * 2}, ${i * 3})`;
+          ctx.font = `${12 + i}px Arial`;
+          ctx.fillText(`JShelter FPD test ${i}`, 10, 50);
+          ctx.closePath();
+
+          canvas.toDataURL();
+          ctx.getImageData(0, 0, 100, 50);
+        }
+      }
+
+      function triggerWebGLFingerprinting(canvas) {
+        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (!gl) 
+          return;
+
+        gl.getExtension("WEBGL_debug_renderer_info");
+        gl.getSupportedExtensions();
+        gl.getParameter(gl.VENDOR);
+        gl.getParameter(gl.RENDERER);
+        gl.getParameter(gl.VERSION);
+        gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+      }
+
+      function triggerTimerFingerprinting() {
+        for (let i = 0; i < 20; i++) {
+          performance.now();
+        }
+      }
+
+      function triggerNavigatorFingerprinting() {
+        navigator.userAgent;
+        navigator.platform;
+        navigator.language;
+        navigator.languages;
+        navigator.hardwareConcurrency;
+        navigator.cookieEnabled;
+        navigator.doNotTrack;
+        navigator.plugins.length;
+        navigator.mimeTypes.length;
+      }
+
+      function triggerScreenFingerprinting() {
+        screen.width;
+        screen.height;
+        screen.availWidth;
+        screen.availHeight;
+        screen.colorDepth;
+        screen.pixelDepth;
+
+        window.innerWidth;
+        window.innerHeight;
+        window.outerWidth;
+        window.outerHeight;
+        window.devicePixelRatio;
+      }
+
+      function triggerStorageFingerprinting() {
+        localStorage.setItem("fpd-local", Math.random().toString());
+        sessionStorage.setItem("fpd-session", Math.random().toString());
+        document.cookie = `fpd_cookie=${Math.random()}; path=/`;
+      }
+
+      function runFingerprinting() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 400;
+        canvas.height = 100;
+
+        triggerCanvasFingerprinting(canvas);
+        triggerWebGLFingerprinting(canvas);
+        triggerTimerFingerprinting();
+        triggerNavigatorFingerprinting();
+        triggerScreenFingerprinting();
+        triggerStorageFingerprinting();
+      }
+
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function uploadFingerprint() {
+        const request = fetch("/fpd-collect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            { 
+              step: "fingerprint-upload" 
+            }),
+        })
+          .then((response) => (response.ok ? "loaded" : "error"))
+          .catch(() => "blocked");
+
+        const timeout = delay(UPLOAD_TIMEOUT).then(() => "blocked");
+        return Promise.race([request, timeout]);
+      }
+
+      async function runTest() {
+        const params = new URLSearchParams(window.location.search);
+        const doFingerprinting = params.get("fingerprint") !== "false";
+ 
+        if (doFingerprinting) {
+          runFingerprinting();
+        }
+        await delay(FPD_EVALUATION_DELAY);
+        const requestResult = await uploadFingerprint();
+        document.getElementById("result").textContent = JSON.stringify({
+          request: requestResult,
+        });
+      }
+
+      window.addEventListener("load", runTest);
+    </script>
+  </body>
+</html>

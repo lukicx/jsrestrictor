@@ -1,0 +1,104 @@
+services:
+  web:
+    build: ./web
+    environment:
+      PORT: "5000"
+    networks:
+      public:
+        ipv4_address: 1.2.3.10
+      local:
+        ipv4_address: 10.255.0.10
+    ports:
+      - "5000:5000"
+  web-https:
+    build: ./web
+    environment:
+      PORT: "5443"
+    networks:
+      public:
+        ipv4_address: 1.2.3.11
+    ports:
+      - "5443:5443"
+  selenium-firefox:
+    image: selenium/standalone-firefox:149.0-20260404
+    shm_size: 2gb
+    networks:
+      public:
+        ipv4_address: 1.2.3.20
+      local:
+        ipv4_address: 10.255.0.20
+    ports:
+      - "7900:7900"
+    environment:
+      - SE_VNC_NO_PASSWORD=true
+      - SE_SCREEN_WIDTH=1280
+      - SE_SCREEN_HEIGHT=720
+      - SE_NODE_SESSION_TIMEOUT=7200
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 1s
+      timeout: 2s
+      retries: 20
+      start_period: 5s
+    volumes:
+    - firefox_profile:/tmp/firefox-profiles
+  selenium-chrome:
+    image: selenium/standalone-chrome:147.0-20260404
+    shm_size: 2gb
+    networks:
+      public:
+        ipv4_address: 1.2.3.30
+      local:
+        ipv4_address: 10.255.0.30
+    ports:
+    - "7901:7900"
+    environment:
+      - SE_VNC_NO_PASSWORD=true
+      - SE_SCREEN_WIDTH=1280
+      - SE_SCREEN_HEIGHT=720
+      - SE_NODE_SESSION_TIMEOUT=7200
+    volumes:
+      - chrome_profile:/tmp/chrome-profiles
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+  tests:
+    build: ./tests
+    depends_on:
+      web:
+        condition: service_started
+      web-https:
+        condition: service_started
+      selenium-firefox:
+        condition: service_healthy
+      selenium-chrome:
+        condition: service_healthy
+    networks:
+      - public
+      - local
+    environment:
+      SELENIUM_FIREFOX_URL: "http://selenium-firefox:4444/wd/hub"
+      SELENIUM_CHROME_URL: "http://selenium-chrome:4444/wd/hub"
+      WEB_HTTP_PUBLIC_URL: "http://1.2.3.10:5000"
+      WEB_HTTP_LOCAL_URL: "http://10.255.0.10:5000"
+      WEB_CONTROL_URL: "http://web:5000"
+      WEB_HTTPS_PUBLIC_URL: "https://1.2.3.11:5443"
+      JSHELTER_FIREFOX_PATH: "/jshelter_firefox.zip"
+    volumes:
+      - ../../jshelter_firefox.zip:/jshelter_firefox.zip:ro
+    command: ["sleep", "infinity"]
+networks:
+  public:
+    ipam:
+      config:
+        - subnet: 1.2.3.0/24
+  local:
+    ipam:
+      config:
+        - subnet: 10.255.0.0/24
+volumes:
+  chrome_profile:
+  firefox_profile:
