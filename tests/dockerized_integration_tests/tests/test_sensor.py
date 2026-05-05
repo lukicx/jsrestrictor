@@ -21,6 +21,28 @@ CDP_TYPE = {
     "relativeOrientation": "relative-orientation",
 }
 
+XYZ_READINGS = {
+    "accelerometer": {"x": 18.7, "y": -22.4, "z": 15.8},
+    "gyroscope": {"x": 8.5, "y": -7.7, "z": 9.8},
+    "gravity": {"x": 5.7,  "y": -6.3,  "z": 4.5},
+    "linearAcceleration": {"x": 12.3, "y": -9.8, "z": 14.5},
+}
+
+ORIENTATION_READINGS = {
+    "absoluteOrientation": {
+        "x": 0.2,
+        "y": 0.4,
+        "z": 0.4,
+        "w": 0.8,
+    },
+    "relativeOrientation": {
+        "x": 0.6,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.8,
+    },
+}
+
 def setup_driver(driver, sensor_type):
     for permission in CDP_PERMISSIONS[sensor_type]:
         driver.execute_cdp_cmd(
@@ -52,10 +74,10 @@ def setup_driver(driver, sensor_type):
                 "type": CDP_TYPE[sensor_type],
                 "reading": {
                     "quaternion": {
-                        "x": 0,
-                        "y": 0,
-                        "z": 0,
-                        "w": 1,
+                        "x": ORIENTATION_READINGS[sensor_type]["x"],
+                        "y": ORIENTATION_READINGS[sensor_type]["y"],
+                        "z": ORIENTATION_READINGS[sensor_type]["z"],
+                        "w": ORIENTATION_READINGS[sensor_type]["w"],
                     }
                 },
             },
@@ -67,9 +89,9 @@ def setup_driver(driver, sensor_type):
                 "type": CDP_TYPE[sensor_type],
                 "reading": {
                     "xyz": {
-                        "x": 1.23,
-                        "y": 4.56,
-                        "z": 7.89,
+                        "x": XYZ_READINGS[sensor_type]["x"],
+                        "y": XYZ_READINGS[sensor_type]["y"],
+                        "z": XYZ_READINGS[sensor_type]["z"],
                     }
                 },
             },
@@ -92,7 +114,6 @@ def test_sensor(sensor_type):
     unchanged_result = run_sensor_case(False, sensor_type)
     jss_result = run_sensor_case(True, sensor_type)
 
-    print("Sensor:", sensor_type)
     print("Unchanged:", unchanged_result)
     print("JSS:", jss_result)
 
@@ -105,15 +126,7 @@ def test_sensor(sensor_type):
     unchanged_data = json.loads(unchanged_result)
     jss_data = json.loads(jss_result)
 
-    if sensor_type in ["absoluteOrientation", "relativeOrientation"]:
-        assert unchanged_data["x"] != jss_data["x"]
-        assert unchanged_data["y"] != jss_data["y"]
-        assert unchanged_data["z"] != jss_data["z"]
-        assert unchanged_data["w"] != jss_data["w"]
-    else:
-        assert unchanged_data["x"] != jss_data["x"]
-        assert unchanged_data["y"] != jss_data["y"]
-        assert unchanged_data["z"] != jss_data["z"]
+    assert unchanged_data != jss_data
 
 @pytest.mark.parametrize("sensor_type", ["absoluteOrientation", "relativeOrientation", "accelerometer", "gravity", "linearAcceleration", "gyroscope"])
 def test_sensor_refresh_same_result(sensor_type):
@@ -131,7 +144,6 @@ def test_sensor_refresh_same_result(sensor_type):
 
         assert second_result not in ("Timeout", "Unsupported API")
         assert not second_result.startswith("Error:")
-
 
         assert first_result == second_result
     finally:

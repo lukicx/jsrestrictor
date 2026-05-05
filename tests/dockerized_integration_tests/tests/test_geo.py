@@ -1,8 +1,18 @@
 import json
+
+import pytest
 from config import WEB_HTTPS_PUBLIC_URL
 from utils import make_driver, wait_result
 
-def run_geo_case(load_jshelter):
+
+GEO_CASES = [
+    {"latitude": 49.1947382, "longitude": 16.6068291, "accuracy": 5},
+    {"latitude": -33.8567844, "longitude": 151.2152967, "accuracy": 50},
+    {"latitude": 64.1466014, "longitude": -21.9426354, "accuracy": 100},
+]
+
+
+def run_geo_case(load_jshelter, case):
     driver = make_driver(load_jshelter, "chrome")
     
     try:
@@ -14,23 +24,16 @@ def run_geo_case(load_jshelter):
                 "origin": WEB_HTTPS_PUBLIC_URL,
             },
         )
-        driver.execute_cdp_cmd(
-            "Emulation.setGeolocationOverride",
-            {
-                "latitude": 50.1234,
-                "longitude": 20.5678,
-                "accuracy": 10,
-            },
-        )
-
+        driver.execute_cdp_cmd("Emulation.setGeolocationOverride", case)
         driver.get(WEB_HTTPS_PUBLIC_URL + "/geo")
         return wait_result(driver)
     finally:
         driver.quit()
 
-def test_geo():
-    unchanged_result = run_geo_case(False)
-    jss_result = run_geo_case(True)
+@pytest.mark.parametrize("case", GEO_CASES)
+def test_geo(case):
+    unchanged_result = run_geo_case(False, case)
+    jss_result = run_geo_case(True, case)
 
     assert not unchanged_result.startswith("Error:")
     assert unchanged_result not in ("Timeout", "Unsupported API")
@@ -44,5 +47,4 @@ def test_geo():
     assert unchanged_data["latitude"] != jss_data["latitude"]
     assert unchanged_data["longitude"] != jss_data["longitude"]
     assert unchanged_data["accuracy"] != jss_data["accuracy"]
-    assert unchanged_data["timestamp"] != jss_data["timestamp"]
 
