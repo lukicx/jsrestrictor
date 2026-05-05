@@ -4,7 +4,7 @@ from config import WEB_CONTROL_URL, WEB_HTTP_PUBLIC_URL
 from utils import make_driver, wait_result
 
 def run_fingerprinting_case(load_jshelter, browser, test_case):
-    requests.post(f"{WEB_CONTROL_URL}/reset", timeout=2)
+    requests.post(f"{WEB_CONTROL_URL}/fingerprinting-reset", timeout=2)
     driver = make_driver(load_jshelter, browser)
     try:
         driver.get(f"{WEB_HTTP_PUBLIC_URL}/fingerprinting?case={test_case}")
@@ -20,10 +20,5 @@ def run_fingerprinting_case(load_jshelter, browser, test_case):
 def test_fingerprinting(test_case, browser):
     unchanged_result = run_fingerprinting_case(False, browser, test_case)
     protected_result = run_fingerprinting_case(True, browser, test_case)
-
-    print(f"Browser: {browser}")
-    print(f"Test case: {test_case}")
-    print(f"Unchanged result: {unchanged_result}")
-    print(f"Protected result: {protected_result}")
 
     assert unchanged_result != protected_result

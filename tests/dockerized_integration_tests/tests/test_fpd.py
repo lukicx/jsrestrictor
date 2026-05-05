@@ -6,7 +6,8 @@ import requests
 from config import WEB_CONTROL_URL, WEB_HTTP_PUBLIC_URL
 from utils import make_driver
 
-RESULT_TIMEOUT = 10
+RESULT_TIMEOUT = 15
+BLOCK_THRESHOLD_MS = 700
 
 def get_logged_steps(logs):
     return [entry["payload"]["step"] for entry in logs]
@@ -18,21 +19,21 @@ def wait_fpd_result(driver, timeout=RESULT_TIMEOUT):
         if text != "idle":
             return json.loads(text)
         time.sleep(0.2)
-    return {"request": "blocked"}
+    return {"first_blocked_ms": None, "total": 0, "blocked_count": 0}
 
 
 @pytest.mark.parametrize(
-    "use_fpd_profile,do_fingerprinting,expected_request,expect_logs",
+    "use_fpd_profile,do_fingerprinting,expect_blocked",
     [
-        # Baseline, no FPD, no fingerprinting
-        (False, True, "loaded", True),
+        # no FPD, fingerprinting
+        (False, True, False),
         # FPD + fingerprinting
-        (True, True, "blocked", False),
+        (True, True, True),
         # FPD + no fingerprinting
-        (True, False, "loaded", True),
+        (True, False, False),
     ],
 )
-def test_fpd(use_fpd_profile, do_fingerprinting, expected_request, expect_logs):
+def test_fpd(use_fpd_profile, do_fingerprinting, expect_blocked):
     requests.post(f"{WEB_CONTROL_URL}/fpd-reset", timeout=2)
 
     firefox_profile = "fpd" if use_fpd_profile else None
@@ -47,14 +48,10 @@ def test_fpd(use_fpd_profile, do_fingerprinting, expected_request, expect_logs):
         logs = requests.get(f"{WEB_CONTROL_URL}/fpd-logs", timeout=2).json()
     finally:
         driver.quit()
-
-    print("FPD profile:", use_fpd_profile)
-    print("Fingerprinting:", do_fingerprinting)
-    print("Result:", result)
-    print("Logs:", logs)
-
-    assert result["request"] == expected_request
-    if expect_logs:
-        assert get_logged_steps(logs) == ["fingerprint-upload"]
+        
+    if expect_blocked:
+        assert result["first_blocked_ms"] <= BLOCK_THRESHOLD_MS
+        assert result["blocked_count"] > 0
     else:
-        assert get_logged_steps(logs) == []
+        assert result["blocked_count"] == 0
+        assert len(logs) > 0

@@ -11,8 +11,6 @@ FPD_LOGS = []
 @app.post("/reset")
 def reset():
     NETWORK_LOGS.clear()
-    FINGERPRINTING_LOGS.clear()
-    FPD_LOGS.clear()
     return "logs cleared"
 
 
@@ -56,6 +54,15 @@ def img():
     })
     svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>'
     return Response(svg, mimetype="image/svg+xml")
+
+
+@app.get("/fetch")
+def fetch():
+    NETWORK_LOGS.append({
+        "time": time.time(),
+        "type": "fetch",
+    })
+    return Response("", status=200)
 
 
 @app.get("/script")

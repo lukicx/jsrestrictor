@@ -32,9 +32,6 @@ def test_geo():
     unchanged_result = run_geo_case(False)
     jss_result = run_geo_case(True)
 
-    print("Unchanged geolocation:", unchanged_result)
-    print("JSS geolocation:", jss_result)
-
     assert not unchanged_result.startswith("Error:")
     assert unchanged_result not in ("Timeout", "Unsupported API")
 

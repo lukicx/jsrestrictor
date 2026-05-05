@@ -22,10 +22,10 @@ from utils import make_driver, wait_result
         (False, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=iframe", "local loaded", True),
 
         #public -> public
-        (False, WEB_HTTP_PUBLIC_URL + "/network", "?targetNetwork=public", "local loaded", True),
+        (True, WEB_HTTP_PUBLIC_URL + "/network", "?targetNetwork=public", "local loaded", True),
 
         #local -> local
-        (False, WEB_HTTP_LOCAL_URL + "/network", "?targetNetwork=local", "local loaded", True),
+        (True, WEB_HTTP_LOCAL_URL + "/network", "?targetNetwork=local", "local loaded", True),
     ],
 )
 def test_nbs(load_jshelter, page_url, url_suffix, expected_result, expect_logs):
@@ -38,10 +38,7 @@ def test_nbs(load_jshelter, page_url, url_suffix, expected_result, expect_logs):
         result = wait_result(driver)
         logs = requests.get(f"{WEB_CONTROL_URL}/logs", timeout=2).json()
 
-        print("Result:", result)
-        print("Logs:", logs)
-
-        assert result == expected_result, f"Expected {expected_result}, got {result}"
+        assert result == expected_result
         if expect_logs:
             assert len(logs) >= 1
         else:

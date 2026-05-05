@@ -32,6 +32,9 @@
           case "iframe":
             target = `${targetBase}/iframe?ts=` + Date.now();
             break;
+          case "fetch":
+            target = `${targetBase}/fetch?ts=` + Date.now();
+            break;
           default:
             target = `${targetBase}/img?ts=` + Date.now();
         }
@@ -89,7 +92,7 @@
         }
       }
       window.addEventListener("load", () => {
-        setTimeout(() => runNBSorLNATest(), 200);
+        setTimeout(() => runNBSorLNATest(), 500);
       });
     </script>
   </body>

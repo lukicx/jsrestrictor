@@ -23,7 +23,7 @@ def install_firefox_addon(driver, addon_path):
         raise RuntimeError(f"Failed to install addon: {response.status_code} {response.text}")
 
 
-def make_driver(load_jshelter, browser, firefox_profile=None):
+def make_driver(load_jshelter, browser, firefox_profile=None, firefox_lna_allow=False, firefox_lna_block=False):
     if browser == "chrome":
         opts = ChromeOptions()
         opts.page_load_strategy = "eager"
@@ -32,22 +32,27 @@ def make_driver(load_jshelter, browser, firefox_profile=None):
         opts.add_argument("--enable-blink-features=PrivateNetworkAccessPermissionPrompt")
         opts.add_argument("--use-angle=swiftshader")
         
-
         if load_jshelter:
-            profile = "jshelter"
-        else:
-            profile = "clean"
-        opts.add_argument(f"--user-data-dir=/tmp/chrome-profiles/{profile}")
-
+            opts.add_argument(f"--user-data-dir=/tmp/chrome-profiles/jshelter")
 
         return webdriver.Remote(
             command_executor=SELENIUM_CHROME_URL,
             options=opts,
         )
-    print("Firefox profile:", firefox_profile)
     opts = FirefoxOptions()
     opts.page_load_strategy = "eager"
     opts.set_preference("xpinstall.signatures.required", False)
+
+    if firefox_lna_allow:
+        opts.set_preference("network.lna.enabled", True)
+        opts.set_preference("network.lna.blocking", False)
+        opts.set_preference("security.mixed_content.block_active_content", False)
+        opts.set_preference("security.mixed_content.upgrade_display_content", False)
+    elif firefox_lna_block:
+        opts.set_preference("network.lna.enabled", True)
+        opts.set_preference("network.lna.blocking", True)
+        opts.set_preference("security.mixed_content.block_active_content", False)
+        opts.set_preference("security.mixed_content.upgrade_display_content", False)
 
     if firefox_profile:
         opts.add_argument("-profile")
