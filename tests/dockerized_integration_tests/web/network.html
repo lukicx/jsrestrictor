@@ -7,6 +7,7 @@
     <script>
       const resultEl = document.getElementById("result");
       let testFinished = false;
+      const TEST_TIMEOUT_MS = 3000;
 
       function setResult(value) {
         if (!testFinished) {
@@ -52,7 +53,7 @@
           setTimeout(() => {
             window.removeEventListener("message", handleMessage);
             setResult("local timeout");
-          }, 3000);
+          }, TEST_TIMEOUT_MS);
 
           const iframe = document.createElement("iframe");
           iframe.src = target;
@@ -60,7 +61,7 @@
           return;
         }
 
-        setTimeout(() => setResult("local timeout"), 3000);
+        setTimeout(() => setResult("local timeout"), TEST_TIMEOUT_MS);
 
         switch (requestType) {
           case "fetch":
@@ -92,7 +93,7 @@
         }
       }
       window.addEventListener("load", () => {
-        setTimeout(() => runNBSorLNATest(), 500);
+        runNBSorLNATest();
       });
     </script>
   </body>

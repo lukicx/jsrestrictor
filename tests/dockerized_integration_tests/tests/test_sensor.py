@@ -114,9 +114,6 @@ def test_sensor(sensor_type):
     unchanged_result = run_sensor_case(False, sensor_type)
     jss_result = run_sensor_case(True, sensor_type)
 
-    print("Unchanged:", unchanged_result)
-    print("JSS:", jss_result)
-
     assert not unchanged_result.startswith("Error:")
     assert unchanged_result not in ("Timeout", "Unsupported API")
 

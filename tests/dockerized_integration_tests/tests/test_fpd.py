@@ -9,9 +9,6 @@ from utils import make_driver
 RESULT_TIMEOUT = 15
 BLOCK_THRESHOLD_MS = 700
 
-def get_logged_steps(logs):
-    return [entry["payload"]["step"] for entry in logs]
-
 def wait_fpd_result(driver, timeout=RESULT_TIMEOUT):
     end = time.time() + timeout
     while time.time() < end:
@@ -50,8 +47,19 @@ def test_fpd(use_fpd_profile, do_fingerprinting, expect_blocked):
         driver.quit()
         
     if expect_blocked:
-        assert result["first_blocked_ms"] <= BLOCK_THRESHOLD_MS
-        assert result["blocked_count"] > 0
+        assert result["first_blocked_ms"] is not None, (
+            f"Expected FPD to block, but no blocking was detected. "
+            f"result={result}, logs={logs}"
+        )
+        assert result["first_blocked_ms"] <= BLOCK_THRESHOLD_MS, (
+            f"FPD blocked too late: {result['first_blocked_ms']}ms, "
+            f"threshold={BLOCK_THRESHOLD_MS}ms"
+        )
     else:
-        assert result["blocked_count"] == 0
-        assert len(logs) > 0
+        assert result["blocked_count"] == 0, (
+            f"Expected no blocked requests. result={result}, logs={logs}"
+        )
+        assert len(logs) > 0, (
+            f"Expected upload, but logs were empty. "
+            f"result={result}"
+        )

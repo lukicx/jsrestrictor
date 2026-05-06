@@ -10,8 +10,8 @@ import requests
 from config import SELENIUM_FIREFOX_URL, JSHELTER_FIREFOX_PATH, SELENIUM_CHROME_URL
 
 def install_firefox_addon(driver, addon_path):
-    with open(addon_path, "rb") as f:
-        addon_b64 = base64.b64encode(f.read()).decode("ascii")
+    with open(addon_path, "rb") as file:
+        addon_b64 = base64.b64encode(file.read()).decode("ascii")
 
     response = requests.post(
         f"{SELENIUM_FIREFOX_URL.rstrip('/')}/session/{driver.session_id}/moz/addon/install",

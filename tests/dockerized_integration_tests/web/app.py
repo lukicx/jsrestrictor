@@ -8,6 +8,10 @@ NETWORK_LOGS = []
 FINGERPRINTING_LOGS = []
 FPD_LOGS = []
 
+@app.route("/empty")
+def empty():
+    return "<!doctype html><html><body>empty</body></html>"
+
 @app.post("/reset")
 def reset():
     NETWORK_LOGS.clear()
@@ -48,7 +52,8 @@ def network():
 
 @app.get("/img")
 def img():
-    NETWORK_LOGS.append({
+    if request.args.get("probe") != "true":
+        NETWORK_LOGS.append({
         "time": time.time(),
         "type": "img",
     })
