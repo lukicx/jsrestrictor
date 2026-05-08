@@ -65,7 +65,6 @@ def make_driver(load_jshelter, browser, firefox_profile=None, firefox_lna_allow=
 
     if firefox_profile is None and load_jshelter:
         install_firefox_addon(driver, JSHELTER_FIREFOX_PATH)
-        time.sleep(1)
     return driver
 
 def is_result_ready(driver):

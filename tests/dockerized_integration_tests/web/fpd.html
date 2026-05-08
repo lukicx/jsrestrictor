@@ -6,7 +6,7 @@
 
     <script>
       const POLL_INTERVAL_MS = 100;
-      const POLL_DURATION_MS = 5000;
+      const POLL_DURATION_MS = 3000;
       const UPLOAD_TIMEOUT_MS = 2000;
       const NUM_POLLS = POLL_DURATION_MS / POLL_INTERVAL_MS;
 
@@ -29,8 +29,7 @@
 
       function triggerWebGLFingerprinting(canvas) {
         const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        if (!gl) 
-          return;
+        if (!gl) return;
 
         gl.getExtension("WEBGL_debug_renderer_info");
         gl.getSupportedExtensions();

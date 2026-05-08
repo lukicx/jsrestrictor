@@ -49,25 +49,28 @@ def wait_for_nbs(driver):
 @pytest.mark.parametrize(
     "load_jshelter,page_url,url_suffix,expected_result,expect_logs",
     [
-        # public -> local
-        # img
         (False, WEB_HTTP_PUBLIC_URL + "/network", "", "local loaded", True),
         (True, WEB_HTTP_PUBLIC_URL + "/network", "", "local blocked", False),
-        # fetch
-        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=fetch", "local blocked", False),
         (False, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=fetch", "local loaded", True),
-        #script
-        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=script", "local blocked", False),
+        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=fetch", "local blocked", False),
         (False, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=script", "local loaded", True),
-        #iframe
-        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=iframe", "local timeout", False),
+        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=script", "local blocked", False),
         (False, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=iframe", "local loaded", True),
-
-        #public -> public
+        (True, WEB_HTTP_PUBLIC_URL + "/network", "?requestType=iframe", "local timeout", False),
         (True, WEB_HTTP_PUBLIC_URL + "/network", "?targetNetwork=public", "local loaded", True),
-
-        #local -> local
         (True, WEB_HTTP_LOCAL_URL + "/network", "?targetNetwork=local", "local loaded", True),
+    ],
+    ids=[
+        "no-jshelter-img-public-to-local",
+        "jshelter-img-public-to-local",
+        "no-jshelter-fetch-public-to-local",
+        "jshelter-fetch-public-to-local",
+        "no-jshelter-script-public-to-local",
+        "jshelter-script-public-to-local",
+        "no-jshelter-iframe-public-to-local",
+        "jshelter-iframe-public-to-local",
+        "jshelter-img-public-to-public",
+        "jshelter-img-local-to-local",
     ],
 )
 def test_nbs(load_jshelter, page_url, url_suffix, expected_result, expect_logs):
@@ -93,9 +96,9 @@ def test_nbs(load_jshelter, page_url, url_suffix, expected_result, expect_logs):
         logs = requests.get(f"{WEB_CONTROL_URL}/logs", timeout=2).json()
 
         if expect_logs:
-            assert len(logs) >= 1
+            assert logs, f"Expected logs, got none"
         else:
-            assert len(logs) == 0
-        assert result == expected_result
+            assert not logs, f"Expected no logs, got {len(logs)}"
+        assert result == expected_result, f"Expected {expected_result}, got {result}"
     finally:
         driver.quit()

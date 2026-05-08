@@ -1,44 +1,92 @@
-1. Preparing the Chrome profile with JShelter
+# Dockerized integration tests
 
-./start_integration chrome-jshelter
+This directory contains Docker-based integration tests for JShelter.
+
+## Building the Firefox extension package
+
+Some Firefox tests require the JShelter Firefox package to be available in the
+repository root as `jshelter_firefox.zip`.
+
+Build it from the repository root:
+
+`make firefox`
+
+This command must be executed from the repository root, not from this directory.
+
+## Requirements
+
+- Docker is installed and running
+- Docker Compose is available
+
+## Preparing browser profiles
+
+Some tests require manually prepared browser profiles. The profiles are stored
+in Docker volumes, so they do not need to be prepared before every test run.
+
+Before running the full test suite, prepare both the Chrome JShelter profile and
+the Firefox FPD profile.
+
+
+### Preparing the Chrome profile with JShelter
+
+Run from this directory:
+
+`./start_integration chrome-jshelter`
 
 Open in the browser:
 
-http://localhost:7901/
+`http://localhost:7901/`
 
-Steps:
-- Click Add extension.
-- Open the three-dot menu.
-- Go to Extensions -> Manage extensions.
-- Alternatively, open chrome://extensions/.
-- Open JShelter -> Details.
-- Enable Allow User Scripts.
-- Press Enter in the terminal to close the browser.
+1. Click **Add extension**.
+2. Open the three-dot menu.
+3. Go to **Extensions -> Manage extensions**.
+   Alternatively, open `chrome://extensions/`.
+4. Open **JShelter -> Details**.
+5. Enable **Allow User Scripts**.
+6. Press Enter in the terminal to close the browser.
 
-2. Preparing the Firefox profile with JShelter for FPD
+### Preparing the Firefox profile with JShelter for FPD
 
-./start_integration firefox-jshelter
+Run from this directory:
+
+`./start_integration firefox-jshelter`
 
 Open in the browser:
 
-http://localhost:7900/
+`http://localhost:7900/`
 
 Steps:
-- Click Add to Firefox -> Add.
-- Open Extensions in the top-right corner -> JShelter.
-- Go to Global Settings.
-- Set Fingerprint Detector -> Behavior to Limited Blocking.
-- Press Enter in the terminal to close the browser.
 
-3. Running all tests
+1. Click **Add to Firefox** and then **Add**.
+2. Open **Extensions** in the top-right corner.
+3. Open **JShelter**.
+4. Go to **Global Settings**.
+5. Set **Fingerprint Detector -> Behavior** to **Limited Blocking**.
+6. Press Enter in the terminal to close the browser.
 
-./start_integration
+## Running all tests
 
-4. Running individual tests
+Run from this directory:
 
+`./start_integration`
+
+
+## Running individual test groups
+
+```bash
 ./start_integration fingerprinting
 ./start_integration fpd
 ./start_integration geo
 ./start_integration lna
 ./start_integration nbs
 ./start_integration sensor
+```
+
+## Test groups
+
+- `fingerprinting` – tests JavaScript APIs commonly used for browser fingerprinting
+- `fpd` – tests Fingerprinting Detector behavior
+- `geo` – tests geolocation API protection
+- `lna` – tests Local Network Access behavior
+- `nbs` – tests Network Boundary Shield behavior
+- `sensor` – tests Generic Sensor API protection
