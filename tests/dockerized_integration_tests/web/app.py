@@ -17,7 +17,6 @@ def reset():
     NETWORK_LOGS.clear()
     return "logs cleared"
 
-
 @app.get("/logs")
 def logs():
     return jsonify(NETWORK_LOGS)
@@ -127,6 +126,13 @@ def fpd_collect():
 def fpd():
     return send_file("fpd.html")
 
+@app.get("/fpd-iframe")
+def fpd_iframe():
+    return send_file("fpd_iframe.html")
+
+@app.get("/fpd-iframe-docwrite")
+def fpd_iframe_docwrite():
+    return send_file("fpd_iframe_docwrite.html")
 
 @app.get("/geo")
 def geo():

@@ -5,9 +5,9 @@
     <div id="result">idle</div>
 
     <script>
-      const POLL_INTERVAL_MS = 100;
+      const POLL_INTERVAL_MS = 200;
       const POLL_DURATION_MS = 3000;
-      const UPLOAD_TIMEOUT_MS = 2000;
+      const UPLOAD_TIMEOUT_MS = 1000;
       const NUM_POLLS = POLL_DURATION_MS / POLL_INTERVAL_MS;
 
       function triggerCanvasFingerprinting(canvas) {
@@ -116,7 +116,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ step: "fingerprint-upload"}),
           })
-            .then((r) => (r.ok ? "loaded" : "error"))
+            .then((response) => (response.ok ? "loaded" : "error"))
             .catch(() => "blocked");
 
           const status = await Promise.race([request, delay(UPLOAD_TIMEOUT_MS).then(() => "blocked")]);
@@ -129,10 +129,10 @@
         }
 
         document.getElementById("result").textContent = JSON.stringify({
-          first_blocked_ms: firstBlockedMs,
-          total: NUM_POLLS,
-          blocked_count: blockedCount,
-        });
+        first_blocked_ms: firstBlockedMs,
+        total: NUM_POLLS,
+        blocked_count: blockedCount,
+      });
       }
 
       window.addEventListener("load", runTest);

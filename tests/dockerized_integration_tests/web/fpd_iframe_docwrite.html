@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <body>
+    <script>
+      (async () => {
+        const params = new URLSearchParams(window.location.search);
+
+        let depth = Number(params.get("depth") || "1");
+        if (depth < 1) {
+          depth = 1;
+        }
+
+        const nextParams = new URLSearchParams();
+
+        if (params.get("fingerprint") === "false") {
+          nextParams.set("fingerprint", "false");
+        }
+
+        const frame = document.createElement("iframe");
+        frame.id = "fpd-frame";
+        frame.width = "900";
+        frame.height = "600";
+
+        if (depth > 1) {
+          nextParams.set("depth", String(depth - 1));
+          frame.src = "/fpd-iframe-docwrite?" + nextParams.toString();
+          document.body.appendChild(frame);
+          return;
+        }
+
+        document.body.appendChild(frame);
+        let url;
+        const query = nextParams.toString();
+        if (query) {
+          url = "/fpd?" + query;
+        } else {
+          url = "/fpd";
+        }
+
+        const response = await fetch(url);
+        const html = await response.text();
+
+        const doc = frame.contentDocument;
+        doc.open();
+        doc.write(html);
+        doc.close();
+      })();
+    </script>
+  </body>
+</html>
