@@ -5,36 +5,25 @@
     <div id="result">idle</div>
 
     <script>
-    async function sendData(testCase, result) {
-      try {
-        await fetch("/collect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            result: result,
-          }),
-        });
-      } catch (e) {
-        console.error("collect failed", e);
-      }
-    }
-    async function runFingerprintingTest() {
-    const params = new URLSearchParams(window.location.search);
-    const testCase = params.get("case");
-    const resultEl = document.getElementById("result");
-    const canvas = document.createElement("canvas");
+      function runFingerprintingTest() {
+        const params = new URLSearchParams(window.location.search);
+        const testCase = params.get("case");
+        const resultEl = document.getElementById("result");
+        const canvas = document.createElement("canvas");
 
-    let result;
+        let result;
 
-    switch (testCase){
-        case "timer":
+        switch (testCase) {
+          case "timer": {
             const values = [];
             for (let i = 0; i < 5; i++) {
-                values.push(performance.now());
+              values.push(performance.now());
             }
             result = JSON.stringify(values);
             break;
-        case "canvas":
+          }
+
+          case "canvas": {
             canvas.width = 400;
             canvas.height = 100;
             const ctx = canvas.getContext("2d");
@@ -42,42 +31,46 @@
             ctx.fillText("fpd canvas test", 10, 50);
             result = canvas.toDataURL();
             break;
-        case "webgl": {
+          }
+
+          case "webgl": {
             const gl = canvas.getContext("webgl");
 
             if (!gl) {
-                result = "no-webgl";
-                break;
+              result = "no-webgl";
+              break;
             }
 
             const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
 
             if (debugInfo) {
-                const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                result = `${vendor} | ${renderer}`;
-                break;
+              const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+              const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+
+              result = `${vendor} | ${renderer}`;
+              break;
             }
 
             const vendor = gl.getParameter(gl.VENDOR);
             const renderer = gl.getParameter(gl.RENDERER);
             result = `${vendor} | ${renderer}`;
             break;
-            }
-        case "hardwareConcurrency":
+          }
+
+          case "hardwareConcurrency": {
             result = navigator.hardwareConcurrency;
             break;
-        default: 
-            resultEl.textContent = "unsupported test case";
+          }
+
+          default: {
+            result = "unsupported test case";
+          }
         }
-        await sendData(testCase, result);
+
         resultEl.textContent = result;
-    }
-   
-    window.addEventListener("load", () => {
-        runFingerprintingTest();
-    });
-      
+      }
+
+      window.addEventListener("load", runFingerprintingTest);
     </script>
   </body>
-</html>
+</html>      
