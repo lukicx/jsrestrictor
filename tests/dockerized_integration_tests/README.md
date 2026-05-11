@@ -37,13 +37,14 @@ Open in the browser:
 
 `http://localhost:7901/`
 
-1. Click **Add extension**.
-2. Open the three-dot menu.
-3. Go to **Extensions -> Manage extensions**.
+1. **Accept** cookies.
+2. Click **Add extension**.
+3. Open the three-dot menu.
+4. Go to **Extensions -> Manage extensions**.
    Alternatively, open `chrome://extensions/`.
-4. Open **JShelter -> Details**.
-5. Enable **Allow User Scripts**.
-6. Press Enter in the terminal to close the browser.
+5. Open **JShelter -> Details**.
+6. Enable **Allow User Scripts**.
+7. Press Enter in the terminal to close the browser.
 
 ### Preparing the Firefox profile with JShelter for FPD
 
@@ -81,6 +82,17 @@ Run from this directory:
 ./start_integration nbs
 ./start_integration sensor
 ```
+
+## Stopping the test environment
+
+When you are done running tests, stop the containers manually:
+
+`docker compose down`
+
+This stops and removes the containers but preserves the prepared browser
+profiles in Docker volumes.
+
+To remove profiles, use `docker compose down -v`.
 
 ## Test groups
 

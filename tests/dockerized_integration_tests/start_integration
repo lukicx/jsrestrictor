@@ -9,11 +9,15 @@ docker compose up -d --build
 case "$TESTS" in
   chrome-jshelter)
     echo "Preparing Chrome profile with JShelter.."
+    docker compose exec -u root selenium-chrome bash -lc \
+    'mkdir -p /tmp/chrome-profiles/jshelter && chown -R seluser:seluser /tmp/chrome-profiles'
     docker compose exec tests python open_chrome.py jshelter
     ;;
 
   firefox-jshelter)
     echo "Preparing Firefox JShelter FPD profile.."
+    docker compose exec -u root selenium-firefox bash -lc \
+    'mkdir -p /tmp/firefox-profiles/fpd && chown -R seluser:seluser /tmp/firefox-profiles'
     docker compose exec tests python open_firefox.py fpd
     ;;
 

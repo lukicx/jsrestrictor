@@ -13,12 +13,12 @@ RESULT_TIMEOUT = 15
 FRAME_TIMEOUT = 10
 BLOCK_THRESHOLD_MS = 1000
 
-def wait_fpd_result(driver, timeout=RESULT_TIMEOUT):
-    end = time.time() + timeout
+def wait_fpd_result(driver):
+    end = time.time() + RESULT_TIMEOUT
     while time.time() < end:
         text = driver.find_element("id", "result").text.strip()
         if text != "idle":
-            return json.loads(text)
+            return json.loads(text) 
         time.sleep(0.2)
     return {"first_blocked_ms": None, "total": 0, "blocked_count": 0}
 

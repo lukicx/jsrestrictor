@@ -9,6 +9,8 @@ import requests
 
 from config import SELENIUM_FIREFOX_URL, JSHELTER_FIREFOX_PATH, SELENIUM_CHROME_URL
 
+JSHELTER__STARTUP_DELAY = 1
+
 def install_firefox_addon(driver, addon_path):
     with open(addon_path, "rb") as file:
         addon_b64 = base64.b64encode(file.read()).decode("ascii")
@@ -65,6 +67,7 @@ def make_driver(load_jshelter, browser, firefox_profile=None, firefox_lna_allow=
 
     if firefox_profile is None and load_jshelter:
         install_firefox_addon(driver, JSHELTER_FIREFOX_PATH)
+        time.sleep(JSHELTER__STARTUP_DELAY)
     return driver
 
 def is_result_ready(driver):

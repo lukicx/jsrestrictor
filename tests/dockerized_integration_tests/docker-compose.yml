@@ -78,7 +78,6 @@ services:
         condition: service_healthy
     networks:
       - public
-      - local
     environment:
       SELENIUM_FIREFOX_URL: "http://selenium-firefox:4444/wd/hub"
       SELENIUM_CHROME_URL: "http://selenium-chrome:4444/wd/hub"

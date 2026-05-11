@@ -28,15 +28,25 @@ def test_lna(request_type, expected_results, access, browser):
         driver = make_driver(False, browser)
 
     try:
-        if access == "allow" and browser == "chrome":
-            driver.execute_cdp_cmd(
-                "Browser.setPermission",
-                {
-                    "permission": {"name": "local-network"},
-                    "setting": "granted",
-                    "origin": WEB_HTTPS_PUBLIC_URL,
-                },
-            )
+        if browser == "chrome":
+            if access == "allow":
+                driver.execute_cdp_cmd(
+                    "Browser.setPermission",
+                    {
+                        "permission": {"name": "local-network"},
+                        "setting": "granted",
+                        "origin": WEB_HTTPS_PUBLIC_URL,
+                    },
+                )
+            if access == "block":
+                driver.execute_cdp_cmd(
+                    "Browser.setPermission",
+                    {
+                        "permission": {"name": "local-network"},
+                        "setting": "denied",
+                        "origin": WEB_HTTPS_PUBLIC_URL,
+                    },
+                )
         url_suffix = f"?requestType={request_type}"
         driver.get(WEB_HTTPS_PUBLIC_URL + "/network" + url_suffix)
         result = wait_result(driver)

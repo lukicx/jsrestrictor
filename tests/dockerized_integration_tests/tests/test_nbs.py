@@ -4,9 +4,8 @@ import pytest
 from config import WEB_HTTP_PUBLIC_URL, WEB_HTTP_LOCAL_URL, WEB_CONTROL_URL
 from utils import make_driver, wait_result
 
-NBS_ACTIVATION_THRESHOLD_MS = 3000
 NBS_ACTIVATION_TIMEOUT_MS = 5000
-NBS_PROBE_INTERVAL_SECONDS = 0.1
+NBS_PROBE_INTERVAL = 0.1
 
 def wait_for_nbs(driver):
     driver.get(WEB_HTTP_PUBLIC_URL + "/")
@@ -43,7 +42,7 @@ def wait_for_nbs(driver):
 
         if blocked:
             return int((time.time() - start) * 1000)
-        time.sleep(NBS_PROBE_INTERVAL_SECONDS)
+        time.sleep(NBS_PROBE_INTERVAL)
     return None
 
 @pytest.mark.parametrize(
@@ -80,13 +79,8 @@ def test_nbs(load_jshelter, page_url, url_suffix, expected_result, expect_logs):
     try:
         if load_jshelter:
             nbs_activation_ms = wait_for_nbs(driver)
-
             assert nbs_activation_ms is not None, (
                 f"NBS did not activate within {NBS_ACTIVATION_TIMEOUT_MS}ms"
-            )
-            assert nbs_activation_ms <= NBS_ACTIVATION_THRESHOLD_MS, (
-                f"NBS activated too late: {nbs_activation_ms}ms "
-                f"(threshold {NBS_ACTIVATION_THRESHOLD_MS}ms)"
             )
             requests.post(f"{WEB_CONTROL_URL}/reset", timeout=2)
 

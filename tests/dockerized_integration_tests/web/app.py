@@ -5,7 +5,6 @@ from flask import Flask, jsonify, Response, send_file, request
 app = Flask(__name__)
 
 NETWORK_LOGS = []
-FINGERPRINTING_LOGS = []
 FPD_LOGS = []
 
 @app.route("/empty")
@@ -22,20 +21,9 @@ def logs():
     return jsonify(NETWORK_LOGS)
 
 
-@app.get("/fingerprinting-logs")
-def fingerprinting_logs():
-    return jsonify(FINGERPRINTING_LOGS)
-
-
 @app.get("/fpd-logs")
 def fpd_logs():
     return jsonify(FPD_LOGS)
-
-
-@app.post("/fingerprinting-reset")
-def fingerprinting_reset():
-    FINGERPRINTING_LOGS.clear()
-    return "fingerprinting logs cleared"
 
 
 @app.post("/fpd-reset")
@@ -96,16 +84,6 @@ def iframe():
     </html>
     """
     return Response(html, mimetype="text/html")
-
-
-@app.post("/collect")
-def collect():
-    payload = request.get_json(force=True, silent=True) or {}
-    FINGERPRINTING_LOGS.append({
-        "time": time.time(),
-        "payload": payload,
-    })
-    return jsonify({"ok": True})
 
 
 @app.get("/fingerprinting")
